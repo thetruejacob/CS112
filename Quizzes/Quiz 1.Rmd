@@ -1,0 +1,126 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+############
+"R" Quiz 1   ### Answer key to be released Tuesday, July 10.
+############
+
+READ THIS FIRST!!!
+Periodically, throughout the summer, I will be circulating short quizzes like the one below.
+The idea is that if you can complete these quizzes successfully, you have the skills
+needed for CS112. The first 10 questions will cover basics; the final 5 will be more advanced.
+
+By start of school, you should have a level of R skill that gets you through the first 10 questions.
+Ideally you would ALSO be able to write the R code for the final 5 questions, but at a minimum 
+you need to be able to read and understand the answer key for these more advanced questions.
+
+I advise you to install R-Studio (in addition to R) on your computer.
+R-Studio is a popular and practical IDE for R programmers...
+(https://en.wikipedia.org/wiki/Integrated_development_environment)
+
+I will be holding office hours over the summer -- I'll email you the timing.
+Ideally, you would save all your code in a "gist" and retain the link to your gist
+for your records. See: https://help.github.com/articles/creating-gists/
+
+##################################
+
+1. Load the "Matching" library. 
+```{r}
+library(Matching)
+```
+
+
+2. Load the lalonde data set into working memory.
+```{r}
+data(lalonde)
+```
+
+
+3. What are the dimensions of the data set?
+```{r}
+dim(lalonde)
+```
+
+
+4. What are the names of the columns?
+```{r}
+names(lalonde)
+```
+
+
+5. How many different variable types are represented in this data set?
+```{r}
+length(unique(sapply(lalonde, class)))
+```
+
+
+6. What's the maximum value of the re74 column? (re74 indicates the person's real earnings in 1974)
+```{r}
+max(lalonde['re74'])
+```
+
+
+7. What's the minimum value of this column?
+```{r}
+min(lalonde['re74'])
+```
+
+
+8. How many of the elements of this column are equal to zero?
+```{r}
+sum(lalonde['re74'] == 0)
+```
+
+
+9. How many elements of this column are less than $5000 OR greater than $10000?
+```{r}
+sum((lalonde['re74'] < 5000) | (lalonde['re74'] > 10000))
+```
+
+
+10. How many people in this data set are married and have more than 8 years of education ("educ")?
+```{r}
+sum((lalonde['married'] == 1) & (lalonde['educ'] > 8))
+```
+
+
+MORE ADVANCED:
+11. What is the interquartile range of "re78" (real earnings in 1978)? Use the "quantile" function.
+```{r}
+quantile(lalonde$re78, 0.75) - quantile(lalonde$re78, 0.25)
+```
+
+
+12. Create a scatterplot, with re74 on the x-axis, and re78 on the y-axis. Label the axes.
+Draw a regression line if you wish (and choose a fun color).
+```{r}
+plot(lalonde$re74, lalonde$re78, col = 'darkgoldenrod4', xlab = 'Earnings in 1974', ylab = 'Earnings in 1978')
+abline(lm(lalonde$re78 ~ lalonde$re74))
+```
+
+
+13. Make a function with a single argument (column number) that outputs the median of that column.
+Advanced: if the user specifies a non-numeric column, then the function returns an error message.
+```{r}
+function(column){if (is.numeric(column)) {return(median(column))} else return('Error')}
+```
+
+
+14. Run a univariate regression, with "age" as a predictor (x variable), re75 as outcome (the "y").
+Interpret the 2 coefficients (of the intercept, and the x variable).
+```{r}
+lm(formula = lalonde$re75 ~ lalonde$age)
+```
+'A person in 1975 should have $784.62 plus $23.35 times their age in real earnings')
+
+
+15. Run a regression with 2 predictors, "age" and "educ", with re75 as the outcome (the "y").
+Interpret the 3 coefficients (of the intercept, and the 2 x variables).
+
+```{r}
+lm(lalonde$re75 ~ lalonde$age + lalonde$educ)
+```
+A person in 1975 should have $348.95 plus $23.10 times their age plus $43.36 for each year of education, in real earnings"
+
