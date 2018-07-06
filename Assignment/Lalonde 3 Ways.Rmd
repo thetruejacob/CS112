@@ -1,0 +1,178 @@
+Understand whether or not the program has different impacts on the two subgroups, individuals with or without high school degrees. 
+- Is there a difference?
+- How is there a difference?
+  - Multivariate Regression with re78 and incorporating at least 6 predictors, including treatment status -
+```{r}
+summary(lm(re78 ~ age + educ + black + hisp + married + nodegr + re74 + re75 + treat, data = lalonde))
+```
+
+    - **how should we choose these 6 or should we choose them all?**
+    - What are the effects and statistical significance of the treatment on re78
+    - Estimate confidence intervals (using standard error results or via simulation)
+    - **Does regression allow for different effects for different individuals? Explain**
+    - Are estimated treatment effects higher for indivudals with or without high school degree?
+  - Random forest with same predictors as in 2, and
+```{r}
+library(randomForest)
+rf = randomForest(re78 ~ age + educ + black + hisp + married + nodegr + re74 + re75 + treat, data = lalonde)
+rf$importance
+varImpPlot(rf, main = "Variables in Importance")
+```
+  
+    - copy-paste variable importance plot into assignment
+    - Use random forest to estimate average treatment effect for the units in the treatment group
+    - Does your tree produce different effects for different individuals?
+    - Are estimated treatment effects higher for indivudals with or without high school degree?
+```{r}
+sum(lalonde$treat == 1 & lalonde$nodegr == 1)
+sum(lalonde$treat == 1 & lalonde$nodegr == 0)
+sum(lalonde$treat == 0 & lalonde$nodegr == 0)
+sum(lalonde$treat == 0 & lalonde$nodegr == 1)
+```
+    
+    - Specify dataset in the function and don't use $
+    - Predict counterfactual potential outcomes for the two new datasets, one with high school grads and one with no high school grads - we have to stratefy over high school graduation. The challenge is that non-high school grads will often have lower earning potential
+```{r}
+nodegr = subset(lalonde, nodegr == 1)
+degr = subset(lalonde, nodegr == 0)
+tapply(nodegr$re78, nodegr$treat, summary)
+tapply(degr$re78, degr$treat, summary)
+```
+Expected value involving discrete + continuous?
+
+Estimate the propensity score (using logistic regression/random forest)
+```{r}
+glm1 = glm(treat ~ age + educ + black + hisp + married + nodegr, data = lalonde, family=binomial())
+glm2 = glm(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75 , data = lalonde, family=binomial())
+glm1$fitted.values
+glm2$fitted.values
+```
+
+```{r}
+m.out1 = matchit(treat ~ age + educ + black + hisp + married + nodegr, data = lalonde, method = "nearest")
+plot(m.out1, type = "jitter")
+plot(m.out1, type = "hist")
+summary(m.out1)
+m.out1optimal = matchit(treat ~ age + educ + black + hisp + married + nodegr, data = lalonde, method = "optimal")
+plot(m.out1optimal, type = "jitter")
+plot(m.out1optimal, type = "hist")
+summary(m.out1optimal)
+# m.out1full = matchit(treat ~ age + educ + black + hisp + married + nodegr, data = lalonde, method = "full")
+# plot(m.out1full, type = "jitter")
+# plot(m.out1full, type = "hist")
+# summary(m.out1full)
+# m.out1genetic = matchit(treat ~ age + educ + black + hisp + married + nodegr, data = lalonde, method = "genetic")
+# plot(m.out1genetic, type = "jitter")
+# plot(m.out1genetic, type = "hist")
+# summary(m.out1genetic)
+m.out1optimal
+```
+
+Nearest neighbor algorithm is 
+- computationally fast, even for large datasets
+- Not invariant ot the intiial order of list
+- Not optimal, and can lead to some bad matches
+
+Largely a bias - variance tradeoff issue.
+
+-optmatch or rcbalance
+
+Checking covariate balance using tableone, or smd = standardized means difference
+rule of thumb is that <0.1 indicates adequate balance, 0.1-0.2 is not too alarming, and >0.2 indicates serious imbalance
+
+
+
+```{r}
+m.out2 = matchit(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, data = lalonde, method = "nearest")
+plot(m.out2, type = "jitter")
+plot(m.out2, type = "hist")
+summary(m.out2)
+m.out2optimal = matchit(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, data = lalonde, method = "optimal")
+plot(m.out2optimal, type = "jitter")
+plot(m.out2optimal, type = "hist")
+summary(m.out2optimal)
+m.out2full = matchit(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, data = lalonde, method = "full")
+plot(m.out2full, type = "jitter")
+plot(m.out2full, type = "hist")
+summary(m.out2full)
+m.out2genetic = matchit(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, data = lalonde, method = "genetic")
+plot(m.out2genetic, type = "jitter")
+plot(m.out2genetic, type = "hist")
+summary(m.out2genetic)
+```
+
+needs graph
+
+Trim tails to remove control subjects with propensity score less than minimum in treatment group and treated subjects with propensity score greater than maximum in control group
+```{r}
+pscore1 = glm(treat ~ age + educ + black + hisp + married + nodegr, data = lalonde, family=binomial())$fitted.values
+psmatch = Match(Tr=lalonde$treat, M=1, X=logit(pscore1), replace=FALSE, caliper = 0.1)
+matched = lalonde[unlist(psmatch[c("index.treated", "index.control")]), ]
+xvars = c("age","educ","black","hisp","married","nodegr","re74","re75","u74","u75")
+matchedtab1 = CreateTableOne(vars = xvars, strata="treat", data= matched, test = FALSE)
+print(matchedtab1, smd = TRUE)
+```
+
+
+, and match on logit using nearest neighbor/optimal matching of said propensity score (the propensity score is bounded between 0-1, making many values seem similar, and logit of proensity score is unbounded which stretches the distribution while preserving ranks). using plot
+
+
+Caliper to ensure no bad matches are accepted - commonly used caliper is 0.2 times standard deviation of logit of propensity score
+1. estimate propensity score
+2. logit propensity score
+3. take standard deviation
+4. set caliper to 0.2 times standard deviation
+a smaller caliper means less bias but more variance
+
+Average causal effect in dollars
+
+Confidence interval using T-test
+
+Use a paired t-test
+
+Model-based estimates
+```{r}
+# m.out() = matchit(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, data = lalonde, method = "optimal")
+
+m.out0 = matchit(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, data = lalonde, method = "nearest", discard = "hull.control")
+z.out0 = zelig(re78 ~ treat + age + educ + black + nodegr + re74 + re75, data = match.data(m.out0), model = "ls")
+x.out0 = setx(z.out0, treat = 0)
+x1.out0 = setx(z.out0, treat = 1)
+s.out0 = sim(z.out0, x = x.out0, x1 = x1.out0)
+summary(s.out0)
+
+```
+
+Average treatment effect on the treated
+```{r}
+m.out1 = matchit(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, data = lalonde, method = "nearest")
+z.out1 = zelig(re78 ~ age + educ + black + hisp + married + nodegr + re74 + re75, data = match.data(m.out1, "control"), model = "ls" )
+x.out1 = setx(z.out1, data = match.data(m.out1, "treat"), cond = TRUE)
+s.out1 = sim(z.out1, x = x.out1)
+summary(s.out1)
+```
+
+Average treatment effect overall
+```{r}
+m.out1 = matchit(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, data = lalonde, method = "nearest")
+
+z.out2 = zelig(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, data = match.data(m.out1, "treat"), model = "ls")
+x.out2 = setx(z.out2, data = match.data(m.out1, "control"), cond = TRUE)
+s.out2 = sim(z.out2, x = x.out2)
+
+ate.all = c(s.out1$qi$att.ev, -s.out2$qi$att.ev)
+
+mean(ate.all)
+sd(ate.all)
+quantile(ate.all, c(0.025, 0.975))
+
+```
+
+
+
+https://dash.harvard.edu/bitstream/handle/1/11130519/King_MatchIt.pdf?sequence%3D1
+
+    - Bootstrap confidence intervals for random forest results
+  - Implement a Fischer Exact Test using the sharp null hypothesis of no treatment effectfor any unit, and interpret results. Produce a data visualization that shows to what extent the observed values - re78 is unusual if the null hypothesis is true
+  - Is there a way to use FET methodology to establish if treatment is higher for individuals with and without a college degree? Explain
+  How to interpret results from an observational study? The fact that it wasn't automatically changed makes it OK?
