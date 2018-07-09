@@ -3,6 +3,70 @@ Understand whether or not the program has different impacts on the two subgroups
 - How is there a difference?
   - Multivariate Regression with re78 and incorporating at least 6 predictors, including treatment status -
 ```{r}
+require("tableone")
+require("MatchIt")
+require("Matching")
+library(tableone)
+library(MatchIt)
+library(Matching)
+data(lalonde, package = "Matching")
+
+xvars = c("age","educ","black","hisp","married","nodegr","re74","re75", "re78")
+table1<- CreateTableOne(vars=xvars, strata="treat", data = lalonde, test=FALSE)
+print(table1, smd = TRUE)
+```
+
+```{r}
+psmodel = glm(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, family = binomial(),data = lalonde)
+summary(psmodel)
+pscore<-psmodel$fitted.values
+range(pscore)
+```
+```{r}
+set.seed(931139)
+psmatch = Match(Tr = lalonde$treat,M = 1,X = pscore, replace = FALSE, caliper = NULL)
+matched = lalonde[unlist(psmatch[c("index.treated","index.control")]), ]
+xvars = c("age","educ","black","hisp","married","nodegr","re74","re75")
+
+#get standardized differences
+matchedtab1 = CreateTableOne(vars = xvars, strata ="treat", data = matched, test = FALSE)
+print(matchedtab1, smd = TRUE)
+
+```
+```{r}
+set.seed(931139)
+logit = function(p) {log(p)-log(1-p)}
+psmatch = Match(Tr = lalonde$treat,M = 1,X = pscore, replace = FALSE, caliper = 0.2)
+matched = lalonde[unlist(psmatch[c("index.treated","index.control")]), ]
+xvars = c("age","educ","black","hisp","married","nodegr","re74","re75")
+
+#get standardized differences
+matchedtab1 = CreateTableOne(vars = xvars, strata ="treat", data = matched, test = FALSE)
+print(matchedtab1, smd = TRUE)
+
+```
+```{r}
+y_trt = matched$re78[matched$treat == 1]
+y_con = matched$re78[matched$treat == 0]
+diffy = y_trt - y_con
+mean(y_trt) - mean(y_con) 
+t.test(diffy)
+```
+
+
+
+
+
+
+
+
+
+
+```{r}
+
+
+mean(lalonde$re78[lalonde$treat == 1]) - mean(lalonde$re78[lalonde$treat == 0])
+
 summary(lm(re78 ~ age + educ + black + hisp + married + nodegr + re74 + re75 + treat, data = lalonde))
 ```
 
@@ -156,15 +220,22 @@ Average treatment effect overall
 ```{r}
 m.out1 = matchit(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, data = lalonde, method = "nearest")
 
-z.out2 = zelig(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, data = match.data(m.out1, "treat"), model = "ls")
-x.out2 = setx(z.out2, data = match.data(m.out1, "control"), cond = TRUE)
-s.out2 = sim(z.out2, x = x.out2)
-
-ate.all = c(s.out1$qi$att.ev, -s.out2$qi$att.ev)
-
-mean(ate.all)
-sd(ate.all)
-quantile(ate.all, c(0.025, 0.975))
+z.out = zelig(re78 ~ treat + age + educ + black + hisp + married + nodegr + re74 + re75, data = match.data(m.out), model = "ls")
+x.out = setx(z.out, treat = 0)
+x1.out = setx(z.out, treat = 1)
+s.out = Zelig::sim(z.out, x = x.out, x1 = x1.out)
+summary(s.out)
+# 
+# 
+# 
+# x.out2 = setx(z.out2, data = match.data(m.out1, "control"), cond = TRUE)
+# s.out2 = sim(z.out2, x = x.out2)
+# 
+# ate.all = c(s.out1$qi$att.ev, -s.out2$qi$att.ev)
+# 
+# mean(ate.all)
+# sd(ate.all)
+# quantile(ate.all, c(0.025, 0.975))
 
 ```
 
@@ -176,3 +247,4 @@ https://dash.harvard.edu/bitstream/handle/1/11130519/King_MatchIt.pdf?sequence%3
   - Implement a Fischer Exact Test using the sharp null hypothesis of no treatment effectfor any unit, and interpret results. Produce a data visualization that shows to what extent the observed values - re78 is unusual if the null hypothesis is true
   - Is there a way to use FET methodology to establish if treatment is higher for individuals with and without a college degree? Explain
   How to interpret results from an observational study? The fact that it wasn't automatically changed makes it OK?
+
