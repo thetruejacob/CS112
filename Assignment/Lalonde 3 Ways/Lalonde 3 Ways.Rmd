@@ -2,8 +2,6 @@ Understand whether or not the program has different impacts on the two subgroups
 - Is there a difference?
 - How is there a difference?
   - Multivariate Regression with re78 and incorporating at least 6 predictors, including treatment status -
-  
-Part 1:
 ```{r}
 require("tableone")
 require("MatchIt")
@@ -53,87 +51,6 @@ y_con = matched$re78[matched$treat == 0]
 diffy = y_trt - y_con
 mean(y_trt) - mean(y_con) 
 t.test(diffy)
-```
-
-Starting from the very beginning and doing matching among students with, and without high school degrees
-```{r}
-require("tableone")
-require("MatchIt")
-require("Matching")
-library(tableone)
-library(MatchIt)
-library(Matching)
-data(lalonde, package = "Matching")
-
-wdeg = subset(lalonde[lalonde$nodegr == 0,], select = -c(nodegr))
-nodeg = subset(lalonde[lalonde$nodegr == 1,], select = -c(nodegr))
-
-xvars = c("age","educ","black","hisp","married","re74","re75", "re78")
-tablewdeg = CreateTableOne(vars=xvars, strata="treat", data = wdeg, test=FALSE)
-print(tablewdeg, smd = TRUE)
-
-xvars = c("age","educ","black","hisp","married","re74","re75", "re78")
-tablenodeg = CreateTableOne(vars=xvars, strata="treat", data = nodeg, test=FALSE)
-print(tablenodeg, smd = TRUE)
-
-```
-There might be a problem - the sample of students with degrees isn't very large.
-```{r}
-psmwdeg = glm(treat ~ age + educ + black + hisp + married + re74 + re75, family = binomial(),data = wdeg)
-
-set.seed(931139)
-psmatchwdeg = Match(Tr = wdeg$treat, M = 1, X = psmwdeg$fitted.values, replace = FALSE, caliper = NULL)
-matchedwdeg = wdeg[unlist(psmatchwdeg[c("index.treated","index.control")]), ]
-xvars = c("age","educ","black","hisp","married","re74","re75")
-
-
-matchedtab1wdeg = CreateTableOne(vars = xvars, strata ="treat", data = matchedwdeg, test = FALSE)
-print(matchedtab1wdeg, smd = TRUE)
-
-
-psmnodeg = glm(treat ~ age + educ + black + hisp + married + re74 + re75, family = binomial(),data = nodeg)
-
-set.seed(931139)
-psmatchnodeg = Match(Tr = nodeg$treat, M = 1, X = psmnodeg$fitted.values, replace = FALSE, caliper = NULL)
-matchednodeg = nodeg[unlist(psmatchnodeg[c("index.treated","index.control")]), ]
-xvars = c("age","educ","black","hisp","married","re74","re75")
-
-
-matchedtab1wdeg = CreateTableOne(vars = xvars, strata ="treat", data = matchednodeg, test = FALSE)
-print(matchedtab1wdeg, smd = TRUE)
-```
-Unfortunately more treatment than control
-
-```{r}
-trtdgr = matchedwdeg$re78[matchedwdeg$treat == 1] 
-condgr = matchedwdeg$re78[matchedwdeg$treat == 0 ]
-mean(trtdgr) - mean(condgr)
-diffdgr = trtdgr - condgr
-t.test(diffdgr, alternative = "greater")
-
-trtnodgr = matchednodeg$re78[matchednodeg$treat == 1] 
-connodgr = matchednodeg$re78[matchednodeg$treat == 0]
-mean(trtnodgr) - mean(connodgr)
-diffnodgr = trtnodgr - connodgr
-t.test(diffnodgr, alternative = "greater")
-```
-
-
-
-
-Now we have the treatment effect and confidence intervals.
-```{r}
-trtdgr = matched$re78[matched$treat == 1 & matched$nodegr == 1] 
-condgr = matched$re78[matched$treat == 0 & matched$nodegr == 1]
-mean(trtdgr) - mean(condgr)
-diffdgr = trtdgr - condgr
-t.test(diffdgr)
-
-trtnodgr = matched$re78[matched$treat == 1 & matched$nodegr == 0] 
-connodgr = matched$re78[matched$treat == 0 & matched$nodegr == 0]
-mean(trtnodgr) - mean(connodgr)
-diffnodgr = trtnodgr - connodgr
-t.test(diffnodgr)
 ```
 
 

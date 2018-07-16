@@ -1,0 +1,189 @@
+---
+title: "Quiz 2"
+output: html_notebook
+---
+
+# Quiz 2 -- More R Coding...
+
+## This quiz covers competencies you should know by the first day of class.
+## The first ten questions are intended to be basic.
+## The final five questions are more advanced.
+## An answer key will be provided by Tuesday, July 24.
+
+## NOTE: Most students find it helpful to code in R using R-Studio.
+## This involves installing R, and installing R-Studio, and then 
+## running R-Studio. Google it if you run into problems, and 
+## if Google can't answer your questions, feel free to email me.
+
+# Load the Matching library, as described at the beginning of the prior quiz
+# (Quiz 1). If you've never installed this Matching library before,
+# you'll have to begin by doing so -- one way is to use use "install.packages()",
+# but there are also 'point-and-click' ways to do it.
+# So---the first step is to install the library, and the next step is to load it.
+```{r}
+library(Matching)
+```
+
+# The "Matching" library comes with a data set called 
+# GerberGreenImai which relates to a series of published papers.
+# You can see some of those papers if (after loading the library)
+# you type:
+```{r}
+?GerberGreenImai
+```
+
+
+# This command opens the help page for the data set. At the bottom of the help page,
+# you'll see a list of 4 relevant published papers.
+
+# To load the data set into working memory, type:
+```{r}
+data(GerberGreenImai)
+```
+
+# To take a quick look at the data set, type:
+```{r}
+head(GerberGreenImai)
+```
+
+# Question 1 (using "dim")
+What are the dimensions of the data set (how many rows and columns)?
+```{r}
+dim(GerberGreenImai)
+```
+
+# Question 2 (using "names")
+# What are the variable names?
+```{r}
+names(GerberGreenImai)
+```
+
+
+# Question 3 (using "is.na")
+# Is there any missing data? If so, how many elements are missing 
+# and which rows contain the missing data?
+```{r}
+any(is.na(GerberGreenImai))
+which(is.na(GerberGreenImai), arr.ind = TRUE)
+```
+
+
+# Question 4 (using the "mode" function, or "is.factor")
+# In this data set, each column is a variable (e.g., "AGE", "WARD", etc.). 
+# Which of these variables (if any) is a factor? 
+```{r}
+names(GerberGreenImai)[sapply(GerberGreenImai, is.factor)]
+```
+
+
+# Question 5 (using the "mode" function)
+# Code a for loop that outputs column name and variable type, per the below format:
+
+# column name #1  variable type #1
+# column name #2  variable type #2
+# column name #3  variable type #3
+# etc., etc., etc.,  type of each 
+```{r}
+for (i in (1:ncol(GerberGreenImai))) { print( cbind(paste('column name:', colnames(GerberGreenImai)[i]),paste('variable type:',sapply(GerberGreenImai, class)[i]))) }
+```
+
+# Question 6
+# What do you think the variable AGE2 represents? 
+```{r}
+## Using 
+## ?GerberGreenImai and checking function arguments gives
+## Age Squared/100
+```
+
+
+# Question 7
+# Which individuals (and how many) voted in 1978?
+```{r}
+which(GerberGreenImai["VOTED98"] == 1)
+sum(GerberGreenImai["VOTED98"])
+```
+
+
+# Question 8
+# Which individuals (and how many) have age > 35 and did NOT vote in 1978?
+```{r}
+which(GerberGreenImai["VOTED98"] == 0 & GerberGreenImai["AGE"] > 35)
+nrow(GerberGreenImai[GerberGreenImai["VOTED98"] == 0 & GerberGreenImai["AGE"] > 35,])
+```
+
+
+# Question 9
+# What line of code eliminates all rows that satisfy the conditions of Question 8?
+```{r}
+GerberGreenImai[!(GerberGreenImai["VOTED98"] == 0 & GerberGreenImai["AGE"] > 35),]
+```
+
+
+# Question 10
+# Append a column that records a "1" if Question 8's conditions satisfy, 0 if not.
+# Congrats, you just created a dummy variable! Google it if you have questions.
+```{r}
+GerberGreenImai['DummyCol'] = as.integer((GerberGreenImai["VOTED98"] == 0 & GerberGreenImai["AGE"] > 35))
+```
+
+
+### More advanced questions
+# Question 11
+# Write a function that performs the algorithm you identified in Question 6.
+```{r}
+all((GerberGreenImai$AGE ^2)/100 == GerberGreenImai$AGE2)
+```
+
+
+# Question 12
+# Run a regression w/ AGE2 and AGE as dependent and independent vars (respectively).
+# Do you get statistically significant results? Is there something causal going on?
+# Does the model make predictions that are not possible in the real world? Explain.
+```{r}
+summary(lm(AGE2 ~ AGE, data= GerberGreenImai))
+plot(AGE2 ~ AGE, data = GerberGreenImai)
+```
+Makes a linear model that stretches on forever - there is a limit to where the model makes sense.
+
+# Question 13 (hint: see the help page for "formula")
+# Consider the following code:
+reg1 <- lm(PHN.C1 ~ PERSONS + VOTE96.1 + NEW + MAJORPTY + AGE + 
+         WARD + I(PERSONS*VOTE96.1), data=GerberGreenImai[c(1:1000),])
+# you can then type something like "summary(reg1)"...
+                 
+# This regression predicts whether or not a subject received a get-out-the-vote
+# phone call based on the first 1000 observations. 
+
+# What is meant by I(PERSONS*VOTE96.1)? Use the resulting regression
+# model to make a prediction for individuals in rows 1001 and 1002. Do these 
+# predictions make sense? Why or why not?
+```{r}
+summary(lm(PHN.C1 ~ PERSONS, data=GerberGreenImai[c(1:1000),]))
+#summary(PHN.C1 ~ PERSONS + VOTE96.1 + NEW + MAJORPTY + AGE + WARD + I(PERSONS*VOTE96.1), data=GerberGreenImai[c(1:1000),])
+```
+
+
+# Question 14
+# Consider the "WARD" variable. Observe the first 20 elements.
+# What happens when you perform arithmetic or statistical operations on these
+# elements? Why? Provide intuition for the result you obtain.
+```{r}
+GerberGreenImai$WARD[1:20]
+GerberGreenImai$WARD[1]
+GerberGreenImai$WARD[2]
+GerberGreenImai$WARD[1] + GerberGreenImai$WARD[2]
+```
+Not meaningful for factors because Ward 13 + Ward 24 != Ward 37
+
+# Question 15
+# Write code that takes the "WARD" variable and creates dummy variables for
+# each individual ward. We can call this "dummy-fying" a categorical variable.
+
+
+# Given your answer to Question 14, do you see why you would want to "dummy-fy" 
+# this variable prior to performing statistical analysis on it (and
+# variables likes this one)?
+```{r}
+model.matrix(~GerberGreenImai$WARD)
+```
+
