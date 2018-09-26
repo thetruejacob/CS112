@@ -22,7 +22,6 @@ print(table1, smd = TRUE)
 psmodel = glm(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, family = binomial(),data = lalonde)
 summary(psmodel)
 pscore<-psmodel$fitted.values
-range(pscore)
 ```
 ```{r}
 set.seed(931139)

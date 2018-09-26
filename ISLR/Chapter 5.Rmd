@@ -1,0 +1,458 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+unk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+require(ISLR)
+summary(Weekly)
+par(mfrow = c(2,2))
+for (i in 1:8) {
+  hist(Weekly[,i], main = names(Weekly)[i] )
+}
+for (i in 1:8) {
+  boxplot(Weekly[,], main = names(Weekly)[i] )
+}
+
+library(Amelia)
+library(mlbench)
+par(mfrow = c(1,1))
+missmap(Weekly, col = c("blue", "red"), legend = FALSE)
+
+```
+
+```{r}
+library(corrplot)
+corrplot(cor(Weekly[, 1:8]), method = "circle")
+```
+```{r}
+pairs(Weekly, col = Weekly$Direction)
+```
+
+```{r}
+x = Weekly[, 1:8]
+y = Weekly[, 9]
+
+scales = list(x = list(relation = "free"), y = list(relation = "free"))
+featurePlot(x = x, y = y, plot = "density", sclaes = scales)
+```
+
+```{r}
+glm.fit = glm(Direction ~ . - Year  - Today, family = binomial, data = Weekly)
+summary(glm.fit)
+glm.probs = predict(glm.fit, type = "response")
+glm.probs[1:5]
+
+glm.pred = ifelse(glm.probs > 0.5, "Up", "Down")
+table(glm.pred, Weekly$Direction)
+mean(glm.pred == Weekly$Direction)
+```
+```{r}
+train = Weekly$Year < 2009
+test = Weekly[!train, ]
+glm.fit = glm(Direction ~ Lag2, family = binomial, data = Weekly, subset = train)
+summary(glm.fit)
+glm.prob = predict(glm.fit, Weekly[!train, ], type = "response")
+glm.pred = ifelse(glm.prob > 0.5, "Up", "Down")
+length(glm.pred)
+table(glm.pred, test$Direction)
+
+
+```
+```{r}
+library(MASS)
+train = Weekly$Year < 2008
+lda.fit = lda(Direction ~ Lag2, data = Weekly, subset = train)
+lda.preds = predict(lda.fit, Weekly[!train, ])
+
+
+# table(as.character(lda.preds$class[0]), as.character(Weekly[!train, "Direction"]))
+table(lda.preds$class, as.character(Weekly[!train, "Direction"]))
+
+
+```
+```{r}
+library(MASS)
+train = Weekly$Year < 2008
+qda.fit = qda(Direction ~ Lag2, data = Weekly, subset = train)
+qda.preds = predict(qda.fit, Weekly[!train, ])
+
+
+# table(as.character(lda.preds$class[0]), as.character(Weekly[!train, "Direction"]))
+table(qda.preds$class, as.character(Weekly[!train, "Direction"]))
+```
+
+```{r}
+library(class)
+train.X = as.matrix(Weekly$Lag2[train])
+test.X = as.matrix(Weekly$Lag2[!train])
+train.Y = Weekly$Direction[train]
+set.seed(1)
+knn.pred = knn(train.X, test.X, train.Y, k =1)
+table(knn.pred, Weekly$Direction[!train])
+mean(knn.pred == Weekly$Direction[!train])
+
+
+```
+
+```{r}
+mpg01 = ifelse(Auto$mpg > median(Auto$mpg), 1, 0 )
+df = data.frame(mpg01 = mpg01, subset(Auto, select = -c(mpg)))
+
+## 75% of the sample size
+smp_size = floor(0.75 * nrow(df))
+## set the seed to make partition reproductible
+set.seed(1)
+train_ind = sample(seq_len(nrow(df)), size = smp_size)
+train = rep(FALSE, nrow(df))
+train[train_ind] = TRUE
+newAuto.train = df[train_ind, ]
+newAuto.test = df[-train_ind, ]
+mpg01.test = df$mpg01[-train_ind]
+```
+
+```{r}
+library(ISLR)
+str(Weekly)
+summary(Weekly)
+plot(Weekly)
+corrplot(cor(Weekly[,1:8]), method = "circle")
+
+```
+```{r}
+# str(Weekly)
+glm.fit = glm(Direction ~ . - Year - Today, family = binomial, data = Weekly)
+summary(glm.fit)
+glm.probs = predict(glm.fit, Weekly, type = "response")
+glm.preds = ifelse(glm.probs >= 0.5, "Up", "Down")
+table(glm.preds, Weekly$Direction)
+(54 + 557)/nrow(Weekly)
+
+
+```
+
+```{r}
+train = Weekly[Weekly$Year <= 2008,]
+glm.fit = glm(Direction ~ Lag2, family = binomial)
+summary(glm.fit)
+glm.probs = predict(glm.fit, Weekly[Weekly$Year >= 2009, ], type = "response")
+glm.preds = ifelse(glm.probs > 0.5, "Up", "Down")
+table(glm.preds, Weekly[Weekly$Year >= 2009, c('Direction')])
+mean(glm.preds == Weekly[Weekly$Year >= 2009, c('Direction')])
+
+```
+
+```{r}
+train = Weekly$Year <= 2008
+lda.train = Weekly[train, ]
+lda.test = Weekly[train, ]
+lda.fit = lda(Direction ~ Lag2, data = Weekly, subset = train)
+lda.preds = predict(lda.fit, lda.test)
+table(lda.preds$class, lda.test$Direction)
+
+```
+
+```{r}
+require(ISLR)
+data(Auto)
+mpg01 <- ifelse(Auto$mpg > median(Auto$mpg), 1, 0)
+mydf <- data.frame(Auto, mpg01)
+pairs(mydf)
+set.seed(1)
+trainid <- sample(1:nrow(mydf), nrow(mydf)*0.7 , replace=F)  # 70% train, 30% test
+train <- mydf[trainid,]
+test <- mydf[-trainid,]
+fit.lda <- lda(mpg01~displacement+horsepower+weight+acceleration, data=train)
+fit.lda.pred <- predict(fit.lda, test)$class
+table(fit.lda.pred, test$mpg01)
+mean(fit.lda.pred != test$mpg01)
+fit.qda <- qda(mpg01~displacement+horsepower+weight+acceleration, data=train)
+fit.qda.pred <- predict(fit.qda, test)$class
+table(fit.qda.pred, test$mpg01)
+fit.logit <- glm(mpg01~displacement+horsepower+weight+acceleration, data=train, family=binomial)
+logit.prob <- predict(fit.logit, test, type="response")
+logit.pred <- ifelse(logit.prob > 0.5, 1, 0)
+table(logit.pred, test$mpg01)
+mean(logit.pred != test$mpg01)
+
+train.X <- cbind(train$displacement, train$horsepower, train$weight, train$acceleration)
+test.X <- cbind(test$displacement, test$horsepower, test$weight, test$acceleration)
+
+
+
+```
+
+```{r}
+train.X <- cbind(train$displacement, train$horsepower, train$weight, train$acceleration)
+test.X <- cbind(test$displacement, test$horsepower, test$weight, test$acceleration)
+knn.pred <- knn(train.X, test.X, train$mpg01, k=1)
+table(knn.pred, test$mpg01)
+
+max = 0
+for (k in 1:100) {
+  knn.pred <- knn(train.X, test.X, train$mpg01, k=k)
+  table(knn.pred, test$mpg01)
+  if (max < mean(knn.pred != test$mpg01)) {
+    max = mean(knn.pred != test$mpg01)
+    print(k)
+  }
+}
+print(max)
+```
+```{r}
+Power = function(){2^3}
+Power2 = function(x,a){x^a}
+Power2(10,3)
+Power2(8,17)
+Power2(131,3)
+
+x = 1:10
+plot(x,Power2(x,2), log = "y")
+```
+
+```{r}
+PlotPower = function(x,a) {
+  plot(x,Power2(x,a), log = "y")
+}
+PlotPower(1:10,3)
+```
+```{r}
+str(Boston)
+corrplot(cor(Boston))
+```
+```{r}
+
+crim1 = ifelse(Boston$crim > median(Boston$crim), 1, 0)
+df = cbind(Boston, crim1)
+corrplot(cor(df))
+```
+
+```{r}
+set.seed(1)
+trainid = sample(1:nrow(df), nrow(df)*0.7, replace = F)
+train = df[trainid,]
+test = df[!trainid,]
+glm.fit = glm(crim1 ~ age + dis + lstat + medv, data = train, family = binomial)
+glm.probs = predict(glm.fit, test, type = "response")
+glm.preds = ifelse(glm.probs > 0.5, 1, 0)
+glm.preds
+
+
+
+```
+
+```{r}
+crim01 <- ifelse(Boston$crim > median(Boston$crim), 1, 0)
+mydf <- data.frame(Boston, crim01)
+pairs(mydf)  # pred1 = age, dis, lstat, medv
+sort(cor(mydf)[1,])  # pred2 = tax, rad (highest correlations with crim)
+set.seed(1)
+trainid <- sample(1:nrow(mydf), nrow(mydf)*0.7 , replace=F)  # 70% train, 30% test
+train <- mydf[trainid,]
+test <- mydf[-trainid,]
+train.X1 <- cbind(train$age, train$dis, train$lstat, train$medv)
+test.X1 <- cbind(test$age, test$dis, test$lstat, test$medv)
+train.X2 <- cbind(train$tax, train$rad)
+test.X2 <- cbind(test$tax, test$rad)
+
+# Logistic Regression models
+fit.logit1 <- glm(crim01~age+dis+lstat+medv, data=train, family=binomial)
+logit1.prob <- predict(fit.logit1, test, type="response")
+logit1.pred <- ifelse(logit1.prob > 0.5, 1, 0)
+mean(logit1.pred != test$crim01)  # error rate
+
+it.logit2 <- glm(crim01~tax+rad, data=train, family=binomial)
+logit2.prob <- predict(fit.logit2, test, type="response")
+logit2.pred <- ifelse(logit2.prob > 0.5, 1, 0)
+mean(logit2.pred != test$crim01)  # error rate
+
+
+fit.lda1 <- lda(crim01~age+dis+lstat+medv, data=train)
+fit.lda1.pred <- predict(fit.lda1, test)$class
+mean(fit.lda1.pred != test$crim01)  # error rate
+
+fit.lda2 <- lda(crim01~tax+rad, data=train)
+fit.lda2.pred <- predict(fit.lda2, test)$class
+mean(fit.lda2.pred != test$crim01)  # error rate
+
+# QDA models
+fit.qda1 <- qda(crim01~age+dis+lstat+medv, data=train)
+fit.qda1.pred <- predict(fit.qda1, test)$class
+mean(fit.qda1.pred != test$crim01)  # error rate
+
+fit.qda2 <- qda(crim01~tax+rad, data=train)
+fit.qda2.pred <- predict(fit.qda2, test)$class
+mean(fit.qda2.pred != test$crim01)  # error rate
+
+# KNN models
+set.seed(1)
+knn1.pred <- knn(train.X1, test.X1, train$crim01, k=1)
+mean(knn1.pred != test$crim01)
+
+knn1.pred <- knn(train.X1, test.X1, train$crim01, k=5)
+mean(knn1.pred != test$crim01)
+
+knn1.pred <- knn(train.X1, test.X1, train$crim01, k=10)
+mean(knn1.pred != test$crim01)
+
+```
+
+```{r}
+library(ISLR)
+set.seed(1)
+train = sample(392, 196)
+
+lm.fit = lm(mpg ~ horsepower, data = Auto, subset = train)
+attach(Auto)
+mean((mpg - predict(lm.fit, Auto))[-train]^2)
+
+```
+
+```{r}
+library(boot)
+glm.fit = glm(mpg ~ horsepower, data = Auto)
+cv.err = cv.glm(Auto, glm.fit)
+cv.err$delta
+cv.err
+```
+```{r}
+cv.err = rep(0,5)
+for (i in 1:5){
+  glm.fit = glm(mpg ~ poly(horsepower, i), data = Auto)
+  cv.err[i] = cv.glm(Auto, glm.fit)$delta[1]
+}
+cv.err
+```
+```{r}
+alpha.fn = function(data, index) {
+  X = data$X[index]
+  Y = data$Y[index]
+  return((var(Y) - cov(X,Y)) / (var(X) + var(Y) - 2*cov(X,Y)))
+}
+alpha.fn(Portfolio, 1:100)
+
+
+```
+
+```{r}
+set.seed(1)
+boot.fn = function(data, index){
+  return(coef(lm(mpg ~ horsepower, data = Auto, subset = index)))
+}
+boot.fn(Auto, sample(392, 392, replace = T))
+boot.fn(Auto, sample(392, 392, replace = T))
+boot(Auto, boot.fn, R = 1000)
+```
+
+```{r}
+boot.fn = function(data, index){coefficients(lm(mpg ~ horsepower + I(horsepower^2), data = data), subset = index)}
+set.seed(1)
+boot(Auto, boot.fn, 1000)
+
+```
+```{r}
+store <- rep(NA, 10000)
+for (i in 1:10000)
+  store[i] <- sum(sample(1:100, rep=TRUE)==4) > 0
+mean(store)
+```
+
+```{r}
+set.seed(1029358)
+glm.fit = glm(default ~ income + balance + student, family = binomial, data = Default)
+trainid = sample(nrow(Default), nrow(Default)*0.5)
+glm.probs = predict(glm.fit, Default[-trainid, ], type = "response")
+glm.preds = ifelse(glm.probs > 0.5, "Yes", "No")
+table(glm.preds, Default[-trainid, c("default")])
+mean(glm.preds != Default[-trainid, c("default")])
+```
+
+```{r}
+set.seed(1)
+glm.fit = glm(default ~ income + balance, family = binomial, data = Default)
+summary(glm.fit)
+```
+```{r}
+set.seed(1)
+boot.fn = function(df, trainid){glm(default ~ income + balance, data = df, family = binomial, subset = trainid)$coef}
+boot.fn(Default, 1:nrow(Default))
+boot(Default, boot.fn, R =100)
+```
+```{r}
+df = rep(FALSE, nrow(Weekly))
+df[1] = TRUE
+
+
+glm.fit = glm(Direction ~ Lag1 + Lag2, family = binomial, data = Weekly, subset = df)
+glm.probs = predict(glm.fit, Weekly[1,], type = "response")
+glm.preds = ifelse(glm.probs > 0.5, "Up", "Down")
+
+glm.preds
+
+
+```
+```{r}
+df = rep(FALSE, nrow(Weekly))
+df[1] = TRUE
+trainid = df
+```
+
+```{r}
+set.seed(1)
+loocv.err <- rep(0,nrow(Weekly))
+for (i in 1:nrow(Weekly)) {
+  myfit <- glm(Direction ~ Lag1 + Lag2, data=Weekly[-i,], family=binomial)
+  mypred <- ifelse(predict(myfit, Weekly[1,], type="response")>0.5, "Up", "Down")
+  loocv.err[i] <- ifelse(Weekly[i,]$Direction==mypred, 0, 1)
+}
+str(loocv.err)
+```
+```{r}
+set.seed(1)
+y = rnorm(100)
+x = rnorm(100)
+y = x - 2*x^2 + rnorm(100)
+plot(x, y)
+df = data.frame(y, x, x2 = x^2, x3 = x^3, x4 = x^4)
+```
+```{r}
+set.seed(2)
+for (i in 1:4){
+  glm.fit = glm(y ~ poly(x, i))
+  cv.err = cv.glm(df, glm.fit, )
+  print(cv.err$delta)
+}
+
+```
+
+```{r}
+lm.fit = lm(y ~ poly(x, 4))
+summary3(lm.fit)
+```
+```{r}
+library(MASS)
+mean(Boston$medv)
+```
+```{r}
+sd(Boston$medv)/(nrow(Boston)^(1/2))
+```
+```{r}
+boot.fn = function(var, id){mean(var[id])}
+boot.res = boot(Boston$medv, boot.fn, R = 100)
+boot.res$t0 + 2*sd(boot.res$t)
+```
+```{r}
+median(Boston$medv)
+boot.fn = function(var,id){mean(var[id])}
+boot.res = boot(Boston$medv, boot.fn, R =100)
+boot.res
+```
+```{r}
+set.seed(1)
+quantile(Boston$medv, 0.1)
+boot.fn = function(var, id){quantile(var[id], 0.1)}
+boot.res = boot(Boston$medv, boot.fn, R = 100)
+boot.res
+```
+
