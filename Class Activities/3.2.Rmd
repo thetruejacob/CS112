@@ -1,0 +1,122 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+TRUE STORY:
+A population of women who were at least 21 years old, of Pima Indian heritage and living near Phoenix, Arizona, was tested for diabetes according to World Health Organization criteria. 
+
+The data were collected by the US National Institute of Diabetes and Digestive and Kidney Diseases. We used the 532 complete records after dropping the (mainly missing) data on serum insulin. The data set is called “Pima” and it lives inside the “MASS” R library.
+
+GOAL:
+To devise a model for predicting diabetes, and estimate its out-of-sample prediction accuracy.
+
+Step 1:	Load the “MASS” library (Type: library(MASS)).
+```{r}
+x = (-50:50)/10
+y = 1 / (1 + exp(x) )
+plot(x,y)
+
+
+
+```
+
+
+```{r}
+library(MASS)
+df = Pima.tr
+
+df$type = ifelse(df$type == "Yes", 1, 0)
+glm.fit = glm(type ~ ., data = Pima.tr, family = binomial)
+summary(glm.fit)
+plot(glm.fit)
+
+glm.probs = predict(glm.fit, df, type = "response")
+glm.preds = ifelse(glm.probs > 0.5, 1, 0)
+table(glm.preds, df$type)
+
+(116 + 39)/length(df$type)
+
+test.probs = predict(glm.fit, Pima.te, type = "response")
+test.preds = ifelse(test.probs > 0.5, 1, 0)
+test_true = ifelse(Pima.te$type == "Yes", 1, 0)
+
+table(test.preds, test_true)
+
+(200 + 66)/length(test.probs)
+
+```
+
+
+
+```{r}
+library(MASS)
+```
+
+Step 2:	Load the Pima.tr data set. This is your training set. Check the help file associated with this data set by typing “?Pima.tr” or Google it. Learn about the data set.
+Type:	data(Pima.tr) # for the training set data, type Pima.tr
+   # the test set is also available: Pima.te 
+```{r}
+df = Pima.tr
+df
+```
+   
+
+Step 3:	Devise a logistic regression that classifies individuals’ diabetes status.
+	Ask yourself--what is the dependent variable? What are independent variables?
+```{r}
+names(Pima.tr)
+df$type = ifelse(df$type == "Yes", 1, 0)
+glm.fit = glm(type ~ ., data = Pima.tr, family = binomial)
+summary(glm.fit)
+
+```
+
+Step 4:	Produce a confusion matrix (e.g., see ISLR pg 158, or page 172/440).
+	Step (a)	Make a vector of predicted probabilities... call it ‘predicted_probs’
+			For making predictions, see hints below--use predict() function…
+
+	Step (b)	Convert your predicted probs to 1s and 0s… use a 50% threshold
+			Type:	predicted_ys <- rep(0, length(predicted_probs)
+predicted_ys[predicted_probs > 0.5] = 1
+
+	Step (c) 	Type: 	table(predicted_ys, Pima.tr$type)
+```{r}
+glm.probs = predict(glm.fit, df, type = "response")
+glm.preds = ifelse(glm.probs > 0.5, 1, 0)
+
+df$type
+
+table(glm.preds, df$type)
+(116 + 39)/(length(df$type))
+```
+
+Step 5:	Load Pima.te. This is your test set (the original data was randomly divided into “Pima.tr” and “Pima.te”.  Use your model from Step 3 to predict for this test set, and produce a new (out-of-sample) confusion matrix. Compare in-sample and out-of-sample performance (i.e., training set vs test set performance).
+
+HINTS:	* You will be using the glm() function to run logistic regression
+	* You will use the predict() function when applying your model to the test set
+		  *  e.g., predict() function: predict(model1, data = “Pima.te”, etc.)
+   		  *  e.g., DON’T fit regressions with variables identified using “$” : Pima.tr$age
+  *  e.g., DO type:  	predict(model1, newdata = “Pima.te”...
+	* When using predict(), the ‘type’ argument is important...
+
+```{r}
+test.probs = predict(glm.fit, Pima.te, type = "response")
+test.preds = ifelse(test.probs > 0.5, 1, 0)
+test_true = ifelse(Pima.te$type == "Yes", 1, 0)
+
+table(test.preds, test_true)
+
+(200 + 66)/length(test.probs)
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+

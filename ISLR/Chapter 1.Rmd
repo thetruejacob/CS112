@@ -1,0 +1,133 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(ISLR)
+lm.fit = lm(mpg ~ horsepower, data = Auto)
+summary(lm.fit)
+
+lm.pred = predict(lm.fit, data.frame(horsepower = 98))
+lm.pred
+
+plot(Auto$horsepower, Auto$mpg)
+abline(lm.fit, lwd = 3, col = "red")
+
+```
+
+
+```{r}
+par(mfrow = c(2,2))
+plot(lm.fit)
+```
+```{r}
+pairs(Auto)
+cor(Auto[,-c(9)])
+```
+```{r}
+lm.fit2 = lm(mpg ~ poly(displacement, 5) + I(log(weight)) * year * origin - name, data = Auto)
+summary(lm.fit2)
+
+par(mfrow = c(2,2))
+plot(lm.fit1)
+
+```
+
+```{r}
+lm.fit = lm(Sales ~ Price +  Urban +US , data = Carseats)
+summary(lm.fit)
+summary(lm.fit)$coef[summary(lm.fit)$coef[,4] < 0.05, ]
+
+lm.fit = lm(Sales ~ Price + US, data = Carseats)
+par(mfrow = c(2,2))
+plot(lm.fit)
+summary(lm.fit)
+confint(lm.fit)
+```
+```{r}
+set.seed(1)
+x = rnorm(100)
+y = 2 * x + rnorm(100)
+
+lm.fit = lm(y ~ x + 0)
+summary(lm.fit)
+```
+```{r}
+library(ISLR)
+lm.fit = lm(Sales ~ Price + Urban + US, data = Carseats)
+summary(lm.fit)
+summary(lm.fit)$coef[summary(lm.fit)$coef[,4] < 0.05, ]
+lm.fit1 = lm(Sales ~ Price + US, data = Carseats)
+summary(lm.fit)
+
+par(mfrow = c(2,2))
+plot(lm.fit)
+```
+
+```{r}
+set.seed(1)
+x = rnorm(100)
+eps = rnorm(100, 0, 0.1)
+y = -1 + 0.5*x + eps
+lm.fit = lm(y ~ x)
+summary(lm.fit)
+length(y)
+plot(x, y)
+abline(-1, 0.5, col = "blue")
+abline(lm.fit, col = "red")
+legend(x = c(0, 2.5), y = c(-2.5, -2), legend = c("population", "model fit"), col = c("blue", "red"), lwd = 4)
+lm.fit2 = lm(y ~ poly(x,2))
+anova(lm.fit, lm.fit2)
+
+
+```
+```{r}
+set.seed(1)
+x1 = runif(100)
+x2 = 0.5*x1 + rnorm(100)/10
+y = 2 + 2*x1 + 0.3*x2 + rnorm(100)
+
+cor(x1, x2)
+plot(x1, x2)
+lm.fit = lm(y ~ x)
+
+x1 = c(x1, 0.1)
+x2 = c(x2, 0.8)
+y = c(y,6)
+lm.fit = lm(y ~ x2 )
+par(mfrow = c(2,2))
+plot(lm.fit)
+summary(lm.fit)
+```
+
+```{r}
+lm.fit = lm(crim ~ ., data = Boston)
+summary(lm.fit)
+par(mfrow = c(2,2))
+plot(lm.fit)
+
+
+lmp  = function (modelobject) {
+  if (class(modelobject) != "lm") {
+    stop("Not an lm")
+  }
+  f = summary(modelobject)$fstatistic
+  p = pf(f[1], f[2], f[3], lower.tail = FALSE)
+  attributes(p) = NULL
+  return(p)
+}
+
+results <- combn(names(Boston), 2, 
+                 function(x) { lmp(lm(Boston[, x])) }, 
+                 simplify = FALSE)
+vars <- combn(names(Boston), 2)
+names(results) <- paste(vars[1,],vars[2,],sep="~")
+results[1:13]  # p-values for response=crim
+
+```
+
