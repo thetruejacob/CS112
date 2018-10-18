@@ -86,9 +86,8 @@ F-statistic:  3.12 on 1 and 98 DF,  p-value: 0.08043
 \section*{Data Visualization and Caption}
 \begin{figure*}[h]
 	\includegraphics[width = 8cm, height = 8cm]{q1.jpg}
-	\caption{We see that when excluding the outlier in the bottom right, the regression line (in red) is slightly positive, with a highly significant $p$-value of 0.000161 and an $R^2$ of 0.1372, meaning 13\% of the variability in y is explanable by x using this line. When the outlier is included, the best fit line re-optimizes and becomes negative. However, the fit using this line is far poorer, as the $p$-value is now a non-significant $p = 0.08 \geq 0.05$, and the $R^2$ is now 0.03, making the 'best-fit line' barely better than a horizontal line. \protect\footnotemark}
 \end{figure*}
-\footnotetext{\#regression: I use the regression equation to provide an interpretation of the relationship between x and y, and explain how the introduction of the outlier produces a far worse regression that is not easily recognized in the plot.}
+We see that when excluding the outlier in the bottom right, the regression line (in red) is slightly positive, with a highly significant $p$-value of 0.000161 and an $R^2$ of 0.1372, meaning 13\% of the variability in y is explanable by x using this line. When the outlier is included, the best fit line re-optimizes and becomes negative. However, the fit using this line is far poorer, as the $p$-value is now a non-significant $p = 0.08 \geq 0.05$, and the $R^2$ is now 0.03, making the 'best-fit line' barely better than a horizontal line.\footnote{\#regression: I use the regression equation to provide an interpretation of the relationship between x and y, and explain how the introduction of the outlier produces a far worse regression that is not easily recognized in the plot.}
 
 \newpage
 \section*{Question 2} NOTE: FOR THIS PROBLEM (AND THIS PROBLEM ONLY), USE ONLY THE CONTROL GROUP. DO NOT USE ANY UNITS FOR WHICH TREATMENT == 1.
@@ -122,8 +121,8 @@ The full tables are accessible  \href{https://github.com/thetruejacob/CS112/blob
 \begin{figure*}[h]
 	\includegraphics[width = 7cm, height = 7cm]{medianplot.jpg}
 	\includegraphics[width = 7cm, height = 7cm]{ninetyplot.jpg}
-	\caption{Unsurprisingly, the hypothetical 90th percentile individual (who has 90th percentile levels of education and real earnings in 1974 and 1975) is predicted to earn more in 1978 (a mean of over \$5000) than a hypothetical $50^\textrm{th}$ percentile, or median individual, whose mean prediction is below \$5000. Interestingly, the older the predicted individual, the greater the variability in predicted 1978 earnings for the $90^\textrm{th}$ percentile unit, although the mean of the prediction interval stays relatively constant. The same pattern can be seen in the median unit, although it is much more subdued.}\footnote{\#dataviz: I generate a detailed data visualization for re78 prediction intervals for both the hypothetical median unit, as well as the 90th percentile unit, and give a detailed insight into what the differences are.}
 \end{figure*}
+Unsurprisingly, the hypothetical 90th percentile individual (who has 90th percentile levels of education and real earnings in 1974 and 1975) is predicted to earn more in 1978 (a mean of over \$5000) than a hypothetical $50^\textrm{th}$ percentile, or median individual, whose mean prediction is below \$5000. Interestingly, the older the predicted individual, the greater the variability in predicted 1978 earnings for the $90^\textrm{th}$ percentile unit, although the mean of the prediction interval stays relatively constant. The same pattern can be seen in the median unit, although it is much more subdued.\footnote{\#decisiondesign: In the control group, there are no samples which have certain ages for which we can directly make predictions. Therefore, we instead 10,000 bootstrapped samples for every age, and use the 2.5 and 97.5 percentiles of those predictions  for each of the 39 ages to understand the precision of our estimate.}\footnote{\#dataviz: I generate a detailed data visualization for re78 prediction intervals for both the hypothetical median unit, as well as the 90th percentile unit, and give a detailed insight into what the differences are.}
 \newpage
 \section*{Question 3}
 Obtain the \textit{nsw.dta} dataset from http://users.nber.org/~rdehejia/data/nswdata2.html. Read the description of this data set provided on the page. If you proceed with this work in R (recommended) use the \textit{foreign} library to open it (so you can use \textit{read.dta}). \\ 
@@ -152,18 +151,21 @@ The full code for this question is accessible  \href{https://github.com/thetruej
 \newpage
 \section*{Histogram}
 \begin{figure*}[h]
-	\includegraphics[width = 8cm, height = 8cm]{coefestimates.jpg}
-	\caption{With enough bootstrap estimates, we see that the estimates of the treatment coefficients are normally distributed around 880.}
+	\includegraphics[width = 7cm, height = 7cm]{coefestimates.jpg}
 \end{figure*}
+With enough bootstrap estimates, we see that the estimates of the treatment coefficients are normally distributed around 880. In other words, if we did not know anything about the participants besides their treatment status, our estimate for the impact of the treatment is only around \$900. Based only on this limited information, we cannot say if the true effect (ATT) is higher or lower than this figure, because we can determine neither the magnitude nor even the sign of the selection bias.\footnote{\#decisiontheory: I explain how the figure alone is not helpful in determining the true effect of the Lalonde program, as this figure does not take selection bias into account and outputs $E[Y^T_i|T] - E[Y^C_i|C]$.}
 
 \section*{Question 4}
 Write a function (5 lines max) that takes Ys and predicted Ys as inputs, and outputs $R^2$. Copy/paste an example using the \textit{nsw.dta} data (from \#3 above) that shows it working.
 \begin{verbatim}
-r2 = function(y, f){sum((f - mean(f))^2)/sum((y - mean(y))^2)}
-
-r2(df$re78, predict(lm(re78 ~ treat, data = df)))	 #0.00487157134050953
+r2 = function(y, f){
+    rss = sum((y - f)^2)
+    tss = sum((y - mean(y))^2)
+    1 - rss/tss
+}
+r2(df$re78, predict(lm(re78 ~ treat, data = df)))	 #0.00487157134050964
 summary(lm(re78 ~ treat, data = df))$r.squared		    #0.00487157134050952
-\end{verbatim}\footnote{\#algorithms: Identifies an appropriate algorithmic strategy and justifies the choice; accurately implements or interprets an algorithm in pseudocode or code with detailed, clear, and efficient steps; provides thorough comments to explain code; (when applicable) effectively implements a complex, sophisticated algorithm. }
+\end{verbatim}\footnote{\#algorithms: Clear, concise code for calculating $R^2$ as $1 - SS_{res}/SS_{tot}$.}
 
 \newpage
 \section*{Question 5}
@@ -175,8 +177,8 @@ Your answer to this question should consist of the following:
 \end{enumerate}
 \begin{figure*}[h]
 	\includegraphics[width = 8cm, height = 8cm]{propensity.jpg}
-	\caption{Surprisingly, the propensity scores of both the treatment and control populations are bimodal, with a peak at 0.38 and at 0.52, with very little mass at the midpoint at 0.45. There is slightly more mass in the upper peak for the treatment group, and more in the lower peak for the control, which is intuitive. However, that the propensity scores of the entire population are between the narrow range of 0.33 and 0.55 is quite surprising. }
 \end{figure*}
+Surprisingly, the propensity scores of both the treatment and control populations are bimodal, with a peak at 0.38 and at 0.52, with very little mass at the midpoint at 0.45. There is slightly more mass in the upper peak for the treatment group, and more in the lower peak for the control, which is intuitive. However, that the propensity scores of the entire population are between the narrow range of 0.33 and 0.55 is quite surprising.\footnote{\#dataviz: I believe this to be quite a clear way of comparing the positivity of the dataset.}
 
 
 \newpage
@@ -184,13 +186,13 @@ Your answer to this question should consist of the following:
 Write code that repeatedly randomly selects predictors from the lalonde data set, runs a regression on those predictors (with ``re78"	 as the dependent variable), and saves the treatment effect.  Produce a histogram showing the wide range of treatment effects that pop out. (This is much easier if you exclude interaction effects). Produce another histogram that shows the wide range of treatment effects that pop out that are also statistically significant.
 \begin{figure*}[h]
 	\includegraphics[width = 7cm, height = 7cm]{atehist.jpg}
-	\includegraphics[width = 7cm, height = 7cm]{atehist1.jpg}
-	\caption{Even when the regression is run 10,000 times, the treatment effects do not follow a nice distribution. It is quite approximately a normal distribution with a mean at 1660. The two distributions are actually the same, because all treatment effects were significant.}
+	\includegraphics[width = 7cm, height = 7cm]{histatt.png}
 \end{figure*}
-\\ When performing propensity score matching and randomizing predictors, a much smoother, and likely more accurate estimate is obtained.
+Even when the regression is run 10,000 times, the treatment effects do not follow a nice distribution. It is quite approximately a normal distribution with a mean at 1660. There was no difference between the histogram of treatment effects, and significant treatment effects, as all effects were significant. The distribution of the right is obtained by randomly choosing a random number of predictors, running a matching algorithm and estimating ATT.W hen performing propensity score matching and randomizing predictors, a much smoother, and likely more accurate estimate is obtained, with an approximately normal distribution centered around 1711, showing considerable agreement between both graphs that the Lalonde Program.
+\footnote{\#decisionanalysis: After recognizing the flaws of using a randomly generated simple regression to estimate the ATT, I implemented a more rigorous to perform matching before estimating ATT for each set of randomly-generated predictors.}
+\footnote{\#algorithms: The code used for obtaining the graph on the right was not at all easy, as it required a for-loop over a matching function (via MatchIt) and ATT estimation (via Zelig). The whole code for 100,000 loops took around 3 hours to run.}
 
 
 
+\end{document}
 
-
-\end{document}  
