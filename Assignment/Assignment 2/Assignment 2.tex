@@ -10,7 +10,13 @@
 \usepackage{floatrow}
 \usepackage{hyperref}
 \setlength\parindent{0pt}
-
+\hypersetup{
+    colorlinks,
+    citecolor=green,
+    filecolor=black,
+    linkcolor=blue,
+    urlcolor=blue
+}
 \title{Assignment 2}
 \author{Pipob Puthipiroj}
 \begin{document}
@@ -27,7 +33,7 @@ Write your own original code that produces a dataset that conforms to the classi
 	\item No more than 3 sentences that would serve as a caption for your figure if it were to be included in an econometrics textbook to illustrate the dangers of extrapolation.
 	\end{enumerate}
 	\section*{Full Code}
-	All code for the assignment can be found \href{https://github.com/thetruejacob/CS112/blob/master/Assignment/Assignment 2.ipynb}{here}.
+	All code for the assignment can be found \href{https://github.com/thetruejacob/CS112/blob/master/Assignment/Assignment\%202.ipynb}{here}.
 	\begin{verbatim}
 set.seed(1)
 x = c(rnorm(n = 99, mean = 0, sd = 1), 3)
@@ -104,7 +110,7 @@ Your answer to this question should consist of the following:
 	\item 2 figures showing the scatterplots (one for the analysis holding predictors at their medians, and other for the analysis holding predictors at their 90\% quantiles). The ``scatterplots" don't have to show the original data--all I am interested in are the prediction intervals for each age. Each of these figures should show how the prediction intervals' change over time (i.e., over the range of ages in the data set). Be sure to label your plot's features (axis, title, etc.). \\ \\ E.g.: https://gist.github.com/diamonaj/75fef6eb48639c2c36f73c58d54bac2f
 \end{enumerate}
 \section*{Tables}
-The full tables are accessible  \href{https://github.com/thetruejacob/CS112/blob/master/Assignment/Assignment 2.ipynb}{here}.
+The full tables are accessible \href{https://github.com/thetruejacob/CS112/blob/master/Assignment/Assignment\%202.ipynb}{here}.
 \begin{table}[h]
 \begin{tabular}{|l|l|}
 \hline
@@ -191,6 +197,7 @@ Write code that repeatedly randomly selects predictors from the lalonde data set
 Even when the regression is run 10,000 times, the treatment effects do not follow a nice distribution. It is quite approximately a normal distribution with a mean at 1660. There was no difference between the histogram of treatment effects, and significant treatment effects, as all effects were significant. The distribution of the right is obtained by randomly choosing a random number of predictors, running a matching algorithm and estimating ATT.W hen performing propensity score matching and randomizing predictors, a much smoother, and likely more accurate estimate is obtained, with an approximately normal distribution centered around 1711, showing considerable agreement between both graphs that the Lalonde Program.
 \footnote{\#decisionanalysis: After recognizing the flaws of using a randomly generated simple regression to estimate the ATT, I implemented a more rigorous to perform matching before estimating ATT for each set of randomly-generated predictors.}
 \footnote{\#algorithms: The code used for obtaining the graph on the right was not at all easy, as it required a for-loop over a matching function (via MatchIt) and ATT estimation (via Zelig). The whole code for 100,000 loops took around 3 hours to run.}
+\footnote{\#observationalstudy: I offer two methods in order to interpret Lalonde's findings: first by running a regression with randomly generated predictors, with does not account for selection bias, and the other by running a matching algorithm with random predictors, which does. This allows me to much more rigorously pin the true treatment effect size down to about 1711, with a standard deviation of 200.}
 
 
 
