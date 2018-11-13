@@ -1,0 +1,237 @@
+---
+title: "Causal Inference Assignment"
+output: html_notebook
+---
+Understand whether or not the program has different impacts on the two subgroups, individuals with or without high school degrees. 
+- Is there a difference?
+- How is there a difference?
+  - Multivariate Regression with re78 and incorporating at least 6 predictors, including treatment status -
+```{r}
+require("tableone")
+require("MatchIt")
+require("Matching")
+library(tableone)
+library(MatchIt)
+library(Matching)
+data(lalonde, package = "Matching")
+
+xvars = c("age","educ","black","hisp","married","nodegr","re74","re75", "re78")
+table1<- CreateTableOne(vars=xvars, strata="treat", data = lalonde, test=FALSE)
+print(table1, smd = TRUE)
+psmodel = glm(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, family = binomial(),data = lalonde)
+summary(psmodel)
+pscore<-psmodel$fitted.values
+range(pscore)
+
+set.seed(931139)
+psmatch = Match(Tr = lalonde$treat,M = 1,X = pscore, replace = FALSE, caliper = NULL)
+matched = lalonde[unlist(psmatch[c("index.treated","index.control")]), ]
+xvars = c("age","educ","black","hisp","married","nodegr","re74","re75")
+
+#get standardized differences
+matchedtab1 = CreateTableOne(vars = xvars, strata ="treat", data = matched, test = FALSE)
+print(matchedtab1, smd = TRUE)
+
+set.seed(931139)
+logit = function(p) {log(p)-log(1-p)}
+psmatch = Match(Tr = lalonde$treat,M = 1,X = pscore, replace = FALSE, caliper = 0.2)
+matched = lalonde[unlist(psmatch[c("index.treated","index.control")]), ]
+xvars = c("age","educ","black","hisp","married","nodegr","re74","re75")
+
+#get standardized differences
+matchedtab1 = CreateTableOne(vars = xvars, strata ="treat", data = matched, test = FALSE)
+print(matchedtab1, smd = TRUE)
+
+y_trt = matched$re78[matched$treat == 1]
+y_con = matched$re78[matched$treat == 0]
+diffy = y_trt - y_con
+mean(y_trt) - mean(y_con) 
+t.test(diffy)
+```
+
+
+
+
+Part 1
+Go to http://users.nber...
+Load these data into R. These are the data from the randomized experiment. 
+Obtain the point estimate of the treatment effect by running a simple difference in means. 
+Obtain the confidence interval by running a univariate linear regrssion (with just he treat variable).
+
+```{r}
+# Load the data into R
+treated = read.table("http://users.nber.org/~rdehejia/data/nswre74_treated.txt")
+control = read.table("http://users.nber.org/~rdehejia/data/nswre74_control.txt")
+
+colnames = c("treat", "age", "educ", "black", "hisp", 
+             "married", "nodegr", "re74", "re75", "re78")
+
+names(treated) = colnames
+names(control) = colnames
+
+# Obtain point estimate of treatment effect by running a simple difference in means
+mean(treated$re78) - mean(control$re78)
+
+# Obtain confidence interval by running a univariate linear regression with (with just the treat variable). Report your results
+confint(lm(re78 ~ treat, data = rbind(treated, control)))
+```
+Seems to be an effect of 1794, confidence interval is 550-3038
+
+
+Part 2
+Now substitute the cps_controls.txt or equivalently the cps_controls for the control group from the randomized epxeriment. Repeat what you did in #1 above.
+```{r}
+control = read.table("http://users.nber.org/~rdehejia/data/cps_controls.txt")
+names(control) = colnames
+
+# Obtain point estimate of treatment effect by running a simple difference in means
+mean(treated$re78) - mean(control$re78)
+
+# Obtain confidence interval by running a univariate linear regression with (with just the treat variable). Report your results
+confint(lm(re78 ~ treat, data = rbind(treated, control)))
+```
+Seems to be an effect of -8497, confidence interval is (-9893)-(-7101.87)
+  
+Part 3
+Use the Match() help file code example as a guide, use propensity score matching to produce an estimated treatment effect and confidence interval. 
+Report your results.
+```{r}
+lalonde['u74'] = lalonde$re74 == 0
+lalonde['u75'] = lalonde$re75 == 0
+glm1 = glm(treat ~ age + I(age^2) + educ + I(educ^2) + black + hisp + married + nodegr + re74 + I(re74^2) + re75 + I(re75^2) + u74 + u75, family = binomial, data = lalonde)
+
+X = glm1$fitted.values
+Y = lalonde$re78
+Tr = lalonde$treat
+
+rr = Match(Y = Y, Tr = Tr, X = X, M = 1)
+summary(rr)
+# 
+# mb = MatchBalance(treat ~ age + I(age^2) + educ + I(educ^2) + black + hisp + married + nodegr + re74 + I(re74^2) + re75 + I(re75^2) + u74 + u75, data = lalonde, match.out = rr, nboots = 10)
+# 
+
+matched = lalonde[unlist(rr[c("index.treated","index.control")]), ]
+xvars = c("age","educ","black","hisp","married","nodegr","re74","re75", "u74", "u75")
+
+#get standardized differences
+matchedtab1 = CreateTableOne(vars = xvars, strata ="treat", data = matched, test = FALSE)
+print(matchedtab1, smd = TRUE)
+```
+
+
+
+Part 4  
+Use the Match() function to run a multivariate matching procedure that uses all the covariates and also includes the estimated propensity scores. 
+Report your results.
+```{r}
+require("Matching")
+
+lalonde = rbind(treated, control)
+
+
+xvars = c("age","educ","black","hisp","married","nodegr","re74","re75", "re78")
+table1<- CreateTableOne(vars=xvars, strata="treat", data = lalonde, test=FALSE)
+print(table1, smd = TRUE)
+psmodel = glm(treat ~ age + educ + black + hisp + married + nodegr + re74 + re75, family = binomial(),data = lalonde)
+summary(psmodel)
+pscore<-psmodel$fitted.values
+range(pscore)
+
+set.seed(931139)
+psmatch = Match(Tr = lalonde$treat,M = 1,X = pscore, replace = FALSE, caliper = NULL)
+matched = lalonde[unlist(psmatch[c("index.treated","index.control")]), ]
+xvars = c("age","educ","black","hisp","married","nodegr","re74","re75")
+
+#get standardized differences
+matchedtab1 = CreateTableOne(vars = xvars, strata ="treat", data = matched, test = FALSE)
+print(matchedtab1, smd = TRUE)
+
+set.seed(931139)
+logit = function(p) {log(p)-log(1-p)}
+psmatch = Match(Tr = lalonde$treat,M = 1,X = logit(pscore), replace = FALSE, caliper = 0.05)
+matched = lalonde[unlist(psmatch[c("index.treated","index.control")]), ]
+xvars = c("age","educ","black","hisp","married","nodegr","re74","re75")
+
+#get standardized differences
+matchedtab1 = CreateTableOne(vars = xvars, strata ="treat", data = matched, test = FALSE)
+print(matchedtab1, smd = TRUE)
+
+y_trt = matched$re78[matched$treat == 1]
+y_con = matched$re78[matched$treat == 0]
+diffy = y_trt - y_con
+mean(y_trt) - mean(y_con) 
+t.test(diffy)
+
+
+# match = Match(Y = df$re78, Tr = df$treat, X = psm$fitted.values, M = 1)
+# summary(match)
+# MatchBalance(treat ~ age + educ + black + hisp + married + nodegr + re74  + re75 , data = df, match.out = match, nboots = 50)
+
+# Sicars
+# mean(df$re78[match$index.treated]) - mean(df$re78[match$index.control])
+# Nik
+# coef(lm(Y ~ Tr, data = match$mdata))[2]
+
+# Confidence interval method 1: Using 1.96
+# c(match$est - 1.96 * match$se, match$est + 1.96 * match$se)
+
+# Confidence interval method 2: Using lm 
+# lm(Y ~ Tr, data = match$mdata)
+
+
+```
+
+Part 5
+```{r}
+lalonde['u74'] = lalonde$re74 == 0
+lalonde['u75'] = lalonde$re75 == 0
+glm1 = glm(treat ~ age + I(age^2) + educ + I(educ^2) + black + hisp + married + nodegr + re74 + I(re74^2) + re75 + I(re75^2) + u74 + u75, family = binomial, data = lalonde)
+
+X = glm1$fitted.values
+Y = lalonde$re78
+Tr = lalonde$treat
+
+rr = Match(Y = Y, Tr = Tr, X = X, M = 1)
+summary(rr)
+
+genout = GenMatch(Tr = Tr, X = X)
+mout = Match(Y = Y, Tr = Tr, X = X, estimand = "ATE", Weight.matrix = genout)
+summary(mout)
+
+matched = lalonde[unlist(mout[c("index.treated","index.control")]), ]
+matchedtab2 = CreateTableOne(vars = c("age","educ","black","hisp","married","nodegr","re74","re75"), strata ="treat", data = matched, test = FALSE)
+print(matchedtab2, smd = TRUE)
+
+# Genetic Matching via propensity scores
+# genout_prop = GenMatch(Tr=nswre74wcps_data$treat, X=Xs_prop, BalanceMatrix=propscores,
+#                        estimand="ATT", M=1, max.generations=10)
+# mout_genmatch_prop = Match(Y=nswre74wcps_data$re78, Tr=nswre74wcps_data$treat,
+#                       X=Xs_prop, estimand="ATT", M=1, Weight.matrix=genout_prop)
+# summary(mout_genmatch_prop)
+##estimate: 1614.6
+##standard error: 936.87
+##p value: 0.0848
+##confidence interval: -221.666, 3450.865
+
+# Genetic Matching using all covariates (first-order)
+# genout = GenMatch(Tr=nswre74wcps_data$treat, X=Xs, BalanceMatrix=Xs,
+#                        estimand="ATT", M=1, max.generations=10)
+# mout_genmatch = Match(Y=nswre74wcps_data$re78, Tr=nswre74wcps_data$treat,
+#                       X=Xs, estimand="ATT", M=1, Weight.matrix=genout)
+# summary(mout_genmatch)
+##estimate: 2066.7
+##standard error:986.2
+##p value: 0.03612
+##confidence interval: 133.748, 3999.652
+
+```
+
+
+
+Include analysis of differing caliper scores
+Include analysis of M
+Include analysis of pop size
+Include analysis of estiamnd
+Include analysis of exact
+Include analysis of replace
+
