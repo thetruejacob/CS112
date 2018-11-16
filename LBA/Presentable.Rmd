@@ -7,9 +7,43 @@ Import and clean data
 
 ```{r}
 df = read.csv("~/Downloads/Investors day data - eventbrite export 041118 .csv", stringsAsFactors = FALSE)
-investors = read.csv("~/Downloads/Clean Investors Day Data - Investors(3).csv", stringsAsFactors = FALSE)
+investors = read.csv("~/Downloads/Clean Investors Day Data - Investors(7).csv", stringsAsFactors = FALSE)
 startups = df[df$Ticket.Type == "Startup", c(9, 11, 12, 13, 14, 15, 16, 17, 18)]
 startups = startups[grep("Getting investment", startups$What.are.you.interested.in.), ]
+```
+
+```{r}
+library(googlesheets)
+gs_ls()
+responses = gs_title("Betahaus Investors' Day Signups (Responses)")
+suppressMessages(library(dplyr))
+response = responses %>% gs_read(we = "Responses")
+response$`What field are you interested in?`
+responselist = lapply(gsub(" ", "", response$`What field are you interested in?`),
+                        function(y){strsplit(as.character(y), fixed = TRUE, ",")})
+
+responselist
+c(startuplist, responselist)[112:length(c(startuplist, responselist))]
+responsedf = data.frame(matrix(0, ncol = length(unique(unlist(startuplist))), nrow = nrow(response)))
+colnames(responsedf) = unique(unlist(startuplist))
+responsedf
+for (i in 1:length(responselist)){for (j in 1:length(responselist[[i]][[1]]))
+{responsedf[i, responselist [[i]][[1]][j]] = 1}}
+responsedf
+
+
+listofrankings = list()
+
+for (i in 1:nrow(investordf)){
+  relevant = responsedf[, as.numeric(investordf[i,1:48 ]) == 1]
+  x = matrix(unlist(sort(rowSums(scale(center = FALSE, relevant)), decreasing = TRUE, index.return = 1)), nrow = nrow(responsedf))
+  x = data.frame(x[,1], startups[x[,2], c(1,3,5,8)])
+  names(x)[1:2] = c("Score", "Matched Startup")
+  listofrankings[[i]] = x
+}
+relevant
+
+scale(center = FALSE, relevant)
 ```
 
 
@@ -43,9 +77,16 @@ for (i in 1:nrow(investordf)){
   names(x)[1:2] = c("Score", "Matched Startup")
   listofrankings[[i]] = x
 }
+View(listofrankings[[18]])
 
-write.csv(listofrankings[[13]], file = "NKT.csv")
-relevant
+startups[c(37,58,68,73,74,76),]
+startupdf[startupdf$Wearable == 1,]
+
+# write.csv(listofrankings[[14]], file = "Jasmine Zang.csv")
+# write.csv(listofrankings[[15]], file = "Frank Wolter.csv")
+# write.csv(listofrankings[[16]], file = "Heinke Bock.csv")
+write.csv(listofrankings[[17]], file = "Heinke Bock.csv")
+# write.csv(listofrankings[[13]], file = "Sparkasse.csv")
 ```
 
 
@@ -103,9 +144,9 @@ View the data so that humans can judge.
 # View(listofrankings[[1]], title = "Innoenergy Matches")
 for (i in 1:length(listofrankings)){View(listofrankings[[i]])}
 
-View(listofrankings[[12]])
-write.csv(listofrankings[[12]], "Koerber matches.csv")
-```
+
+write.csv(listofrankings[[14]], "Sparkasse matches.csv")
+w```
 Export to each page of a xlsx
 ```{r}
 

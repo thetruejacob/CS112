@@ -1,0 +1,5 @@
+2001_Table1ALL.csv (text/csv) 204396 bytes.
+Stand Your Ground Extension Paper DeIdentified.R (type/x-r-syntax) 124592 bytes.
+Stand Your Ground Extension Paper.R (type/x-r-syntax) 124796 bytes.
+Table 2 Extension Data.csv (text/csv) 550299 bytes.
+Table 2 Replication Data.csv (text/csv) 528394 bytes.
