@@ -3,8 +3,16 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{tikz}
+\usepackage{hyperref}
+\setlength\parindent{0pt}
+\hypersetup{
+    colorlinks,
+    citecolor=green,
+    filecolor=black,
+    linkcolor=blue,
+    urlcolor=blue
+}
 
-\setlength{\parindent}{0pt}
 \begin{document}
 \title{CS112 LBA}
 \author{Jacob Puthipiroj}
@@ -17,7 +25,7 @@ Hello Vivian, Katka, as per our meeting on Tuesday, I'd like to go into further 
 Instead of relying solely on human judgment for the matching of startups to investors on Investors' Day, Betahaus can use a simple matching algorithm to compute the level of 'fit' of each startup to each investor, and order each startup by said fitness score. This a simple algorithm for which data can easily be implemented in currently existing customer-facing interfaces, such as EventBrite signup sheets. Having an algorithmically sorted list for each startup will significantly reduce the amount of human hours to be spent on this task.
 
 \section*{Problem Framing}
-Betahaus, as a community of entrepreneurs, often organizes multiple events year-round in order to grow the startup ecosystem in Berlin. One of the largest of these events is the Investors' Day, held annually in November. In recent years, the number of attendees has grown exponentially; the attendance in 2018 is guaranteed to include at least 300 startup representatives and 30 investors. With it being impossible for every investor to spend time individually with each startup, each investor aims to spend time only with startups that are most relevant to their own interests. To date, this has been done manually - Betahaus staff will spend hours finding attendees in the startup list which they believe have the closest matches to the investor, based on their own understanding of investor preferences. However, this process can be significantly automated by way of a matching algorithm.\footnote{\#utility: For all stakeholders involved, the algorithm was a boon. Investors could be supplied not only with handful of startups selected to match them on, but an entire customized list of all startup attendees ranked in order of relevancy. For Betahaus, the amount of time spent on tedious tasks was significantly reduced. For investors, they were paired with investors who were already interested in what they had to present.}
+Betahaus, as a community of entrepreneurs, often organizes multiple events year-round in order to grow the startup ecosystem in Berlin. One of the largest of these events is the Investors' Day, held annually in November. In recent years, the number of attendees has grown exponentially; the attendance in 2018 is guaranteed to include at least 300 startup representatives and 30 investors. With it being impossible for every investor to spend time individually with each startup, each investor aims to spend time only with startups that are most relevant to their own interests. To date, this has been done manually - Betahaus staff will spend hours finding attendees in the startup list which they believe have the closest matches to the investor, based on their own understanding of investor preferences. However, this process can be significantly automated by way of a matching algorithm.
  
 \section*{Data Required}
 The matching algorithm requires relatively small amounts of data that can be easily (and is currently) gathered in the EventBrite signup pages. This includes, from the startups:
@@ -81,12 +89,12 @@ Furthermore, the following preferences are required from the investors:
 \end{itemize}
 
 
-\item Repeat steps 2-5 for each new investor.\footnote{\#audience: In order for the investors to know what I am talking about, I try to make the explanation as clear as possible, I try to use examples that are as simple as possible, involving only 2 startups and 3 investor fields, as well as providing extensive reasoning.}
+\item Repeat steps 2-5 for each new investor.
 \end{enumerate}
 
 
 \section*{Conclusion and Next Steps}
-With an exponentially growing number of attendees to Betahaus events, it is quickly becoming infeasible to rely solely on manpower to ensure satisfaction of investors when it comes to presenting portfolio startups. By using an algorithm that sorts startups by relevancy, Betahaus staff can more effectively choose matches for each investor.\footnote{\#cognitivepersuasion: This was simple but effective. The idea that they could save tons of time (a staff member reported spending over 7 hours for the previous' years events, plus time spent on similar events) for a rapidly growing problem was so appealing that I only had to present the product for them to jump on board. I have already implemented this algorithm over the past week.}\footnote{\#professionalism: I formatted the work in a clear and concise manner.}
+With an exponentially growing number of attendees to Betahaus events, it is quickly becoming infeasible to rely solely on manpower to ensure satisfaction of investors when it comes to presenting portfolio startups. By using an algorithm that sorts startups by relevancy, Betahaus staff can more effectively choose matches for each investor.
 
 	
 \begin{figure*}[h]
@@ -94,9 +102,6 @@ With an exponentially growing number of attendees to Betahaus events, it is quic
 \includegraphics[scale = 0.2]{katka.jpg}
 \caption{A meeting with Katka on November $6^{\textrm{th}}$, 2018.}
 \end{figure*}
-
-\section*{Technical Appendix}
-All code for the assignment can be found \href{https://github.com/thetruejacob/B166/blob/master/Forecasting%20Assingment/HoltWinters%20and%20ARIMA.ipynb}{here}.
 
 
 

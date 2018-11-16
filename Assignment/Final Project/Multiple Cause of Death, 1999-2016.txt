@@ -1,0 +1,66 @@
+"Notes"	"Year"	"Year Code"	"Month"	"Month Code"	"State"	"State Code"	"MCD - ICD Chapter"	"MCD - ICD Chapter Code"	Deaths	Population	Crude Rate
+	"1999"	"1999"	"Jan., 1999"	"1999/01"	"Alabama"	"01"	"External causes of morbidity and mortality"	"V01-Y89"	27	Not Applicable	Not Applicable
+	"1999"	"1999"	"Feb., 1999"	"1999/02"	"Alabama"	"01"	"External causes of morbidity and mortality"	"V01-Y89"	24	Not Applicable	Not Applicable
+	"1999"	"1999"	"Mar., 1999"	"1999/03"	"Alabama"	"01"	"External causes of morbidity and mortality"	"V01-Y89"	21	Not Applicable	Not Applicable
+	"1999"	"1999"	"Apr., 1999"	"1999/04"	"Alabama"	"01"	"External causes of morbidity and mortality"	"V01-Y89"	17	Not Applicable	Not Applicable
+	"1999"	"1999"	"May, 1999"	"1999/05"	"Alabama"	"01"	"External causes of morbidity and mortality"	"V01-Y89"	26	Not Applicable	Not Applicable
+	"1999"	"1999"	"Jun., 1999"	"1999/06"	"Alabama"	"01"	"External causes of morbidity and mortality"	"V01-Y89"	25	Not Applicable	Not Applicable
+	"1999"	"1999"	"Jul., 1999"	"1999/07"	"Alabama"	"01"	"External causes of morbidity and mortality"	"V01-Y89"	25	Not Applicable	Not Applicable
+	"1999"	"1999"	"Aug., 1999"	"1999/08"	"Alabama"	"01"	"External causes of morbidity and mortality"	"V01-Y89"	29	Not Applicable	Not Applicable
+	"1999"	"1999"	"Sep., 1999"	"1999/09"	"Alabama"	"01"	"External causes of morbidity and mortality"	"V01-Y89"	27	Not Applicable	Not Applicable
+	"1999"	"1999"	"Oct., 1999"	"1999/10"	"Alabama"	"01"	"External causes of morbidity and mortality"	"V01-Y89"	20	Not Applicable	Not Applicable
+	"1999"	"1999"	"Nov., 1999"	"1999/11"	"Alabama"	"01"	"External causes of morbidity and mortality"	"V01-Y89"	21	Not Applicable	Not Applicable
+	"1999"	"1999"	"Dec., 1999"	"1999/12"	"Alabama"	"01"	"External causes of morbidity and mortality"	"V01-Y89"	31	Not Applicable	Not Applicable
+"---"
+"Dataset: Multiple Cause of Death, 1999-2016"
+"Query Parameters:"
+"Title:"
+"2013 Urbanization: All"
+"Autopsy: All"
+"Gender: All"
+"Hispanic Origin: All"
+"MCD - ICD-10 Codes: X93 (Assault by handgun discharge), X94 (Assault by rifle, shotgun and larger firearm discharge), X95"
+"(Assault by other and unspecified firearm discharge)"
+"Place of Death: All"
+"Race: All"
+"States: Alabama (01), Alaska (02)"
+"Ten-Year Age Groups: All"
+"UCD - ICD-10 Codes: V01-Y89 (External causes of morbidity and mortality)"
+"Weekday: All"
+"Year/Month: 1999"
+"Group By: Year, Month, State, MCD - ICD Chapter"
+"Show Totals: Disabled"
+"Show Zero Values: False"
+"Show Suppressed: False"
+"Calculate Rates Per: 100,000"
+"Rate Options: Default intercensal populations for years 2001-2009 (except Infant Age Groups)"
+"---"
+"Help: See http://wonder.cdc.gov/wonder/help/mcd.html for more information."
+"---"
+"Query Date: Nov 16, 2018 10:54:00 AM"
+"---"
+"Suggested Citation: Centers for Disease Control and Prevention, National Center for Health Statistics. Multiple Cause of Death"
+"1999-2016 on CDC WONDER Online Database, released December, 2017. Data are from the Multiple Cause of Death Files, 1999-2016, as"
+"compiled from data provided by the 57 vital statistics jurisdictions through the Vital Statistics Cooperative Program. Accessed"
+"at http://wonder.cdc.gov/mcd-icd10.html on Nov 16, 2018 10:54:00 AM"
+"---"
+Messages:
+"1. Totals are not available for these results due to suppression constraints. More Information:"
+"http://wonder.cdc.gov/wonder/help/faq.html#Privacy."
+"2. Rows with suppressed Deaths are hidden. Use Quick Options above to show suppressed rows."
+"---"
+Footnotes:
+"1. Totals and sub-totals show the frequency of the selected causes of death, which may be greater than the number of deaths."
+"Note that any single death record may have up to 20 causes. More information."
+"---"
+Caveats:
+"1. Population and rates are labeled 'Not Applicable' when Autopsy, Place of Death, Weekday or Month are grouped by or limited,"
+"due to lack of a valid population. More information: http://wonder.cdc.gov/wonder/help/mcd.html#NotApplicableRates."
+"2. These items in the results table are not fully selected: External causes of morbidity and mortality. The Query Description"
+"lists the actual values selected."
+"3. Data are Suppressed when the data meet the criteria for confidentiality constraints. More information:"
+"http://wonder.cdc.gov/wonder/help/mcd.html#Assurance of Confidentiality."
+"4. Death rates are flagged as Unreliable when the rate is calculated with a numerator of 20 or less. More information:"
+"http://wonder.cdc.gov/wonder/help/mcd.html#Unreliable."
+"5. Changes to cause of death classification affect reporting trends. More information:"
+"http://wonder.cdc.gov/wonder/help/mcd.html#ICD-10 Changes."
